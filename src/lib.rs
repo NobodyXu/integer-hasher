@@ -11,7 +11,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use core::{
-    fmt,
     hash::{BuildHasherDefault, Hasher},
     marker::PhantomData,
 };
@@ -107,52 +106,8 @@ pub type BuildIntHasher<T> = BuildHasherDefault<IntHasher<T>>;
 /// assert_eq!(Some(&'a'), m.get(&0));
 /// assert_eq!(Some(&'b'), m.get(&1));
 /// ```
-#[cfg(debug_assertions)]
-pub struct IntHasher<T>(u64, bool, PhantomData<T>);
-
-#[cfg(not(debug_assertions))]
-pub struct IntHasher<T>(u64, PhantomData<T>);
-
-impl<T> fmt::Debug for IntHasher<T> {
-    #[cfg(debug_assertions)]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_tuple("IntHasher")
-            .field(&self.0)
-            .field(&self.1)
-            .finish()
-    }
-
-    #[cfg(not(debug_assertions))]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_tuple("IntHasher").field(&self.0).finish()
-    }
-}
-
-impl<T> Default for IntHasher<T> {
-    #[cfg(debug_assertions)]
-    fn default() -> Self {
-        IntHasher(0, false, PhantomData)
-    }
-
-    #[cfg(not(debug_assertions))]
-    fn default() -> Self {
-        IntHasher(0, PhantomData)
-    }
-}
-
-impl<T> Clone for IntHasher<T> {
-    #[cfg(debug_assertions)]
-    fn clone(&self) -> Self {
-        IntHasher(self.0, self.1, self.2)
-    }
-
-    #[cfg(not(debug_assertions))]
-    fn clone(&self) -> Self {
-        IntHasher(self.0, self.1)
-    }
-}
-
-impl<T> Copy for IntHasher<T> {}
+#[derive(Copy, Clone, Debug, Default)]
+pub struct IntHasher<T>(u64, #[cfg(debug_assertions)] bool, PhantomData<T>);
 
 /// Types which are safe to use with `IntHasher`.
 ///
@@ -202,116 +157,69 @@ impl IsEnabled for i32 {}
 impl IsEnabled for i64 {}
 impl IsEnabled for isize {}
 
-#[cfg(not(debug_assertions))]
-impl<T: IsEnabled> Hasher for IntHasher<T> {
-    fn write(&mut self, _: &[u8]) {
-        panic!("Invalid use of IntHasher")
-    }
-
-    fn write_u8(&mut self, n: u8) {
-        self.0 = u64::from(n)
-    }
-    fn write_u16(&mut self, n: u16) {
-        self.0 = u64::from(n)
-    }
-    fn write_u32(&mut self, n: u32) {
-        self.0 = u64::from(n)
-    }
-    fn write_u64(&mut self, n: u64) {
-        self.0 = n
-    }
-    fn write_usize(&mut self, n: usize) {
-        self.0 = n as u64
-    }
-
-    fn write_i8(&mut self, n: i8) {
-        self.0 = n as u64
-    }
-    fn write_i16(&mut self, n: i16) {
-        self.0 = n as u64
-    }
-    fn write_i32(&mut self, n: i32) {
-        self.0 = n as u64
-    }
-    fn write_i64(&mut self, n: i64) {
-        self.0 = n as u64
-    }
-    fn write_isize(&mut self, n: isize) {
-        self.0 = n as u64
-    }
-
-    fn finish(&self) -> u64 {
-        self.0
+impl<T> IntHasher<T> {
+    fn precond_check(&mut self) {
+        #[cfg(debug_assertions)]
+        {
+            assert!(!self.1, "IntHasher: second write attempt detected.");
+            self.1 = true
+        }
     }
 }
 
-#[cfg(debug_assertions)]
 impl<T: IsEnabled> Hasher for IntHasher<T> {
     fn write(&mut self, _: &[u8]) {
         panic!("Invalid use of IntHasher")
     }
 
     fn write_u8(&mut self, n: u8) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = u64::from(n);
-        self.1 = true
+        self.precond_check();
+        self.0 = u64::from(n)
     }
-
     fn write_u16(&mut self, n: u16) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = u64::from(n);
-        self.1 = true
+        self.precond_check();
+        self.0 = u64::from(n)
     }
-
     fn write_u32(&mut self, n: u32) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = u64::from(n);
-        self.1 = true
+        self.precond_check();
+        self.0 = u64::from(n)
     }
-
     fn write_u64(&mut self, n: u64) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n;
-        self.1 = true
+        self.precond_check();
+        self.0 = n
     }
-
     fn write_usize(&mut self, n: usize) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n as u64;
-        self.1 = true
+        self.precond_check();
+        self.0 = n as u64
     }
 
     fn write_i8(&mut self, n: i8) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n as u64;
-        self.1 = true
+        self.precond_check();
+        self.0 = n as u64
     }
-
     fn write_i16(&mut self, n: i16) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n as u64;
-        self.1 = true
+        self.precond_check();
+        self.0 = n as u64
     }
-
     fn write_i32(&mut self, n: i32) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n as u64;
-        self.1 = true
+        self.precond_check();
+        self.0 = n as u64
     }
-
     fn write_i64(&mut self, n: i64) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n as u64;
-        self.1 = true
+        self.precond_check();
+        self.0 = n as u64
     }
-
     fn write_isize(&mut self, n: isize) {
-        assert!(!self.1, "IntHasher: second write attempt detected.");
-        self.0 = n as u64;
-        self.1 = true
+        self.precond_check();
+        self.0 = n as u64
     }
 
     fn finish(&self) -> u64 {
+        #[cfg(debug_assertions)]
+        {
+            assert!(self.1, "IntHasher: no write is called before finish()");
+        }
+
         self.0
     }
 }
