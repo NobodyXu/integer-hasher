@@ -193,6 +193,18 @@ impl IsEnabled for num::NonZeroI32 {}
 impl IsEnabled for num::NonZeroI64 {}
 impl IsEnabled for num::NonZeroIsize {}
 
+impl IsEnabled for num::Wrapping<u8> {}
+impl IsEnabled for num::Wrapping<u16> {}
+impl IsEnabled for num::Wrapping<u32> {}
+impl IsEnabled for num::Wrapping<u64> {}
+impl IsEnabled for num::Wrapping<usize> {}
+
+impl IsEnabled for num::Wrapping<i8> {}
+impl IsEnabled for num::Wrapping<i16> {}
+impl IsEnabled for num::Wrapping<i32> {}
+impl IsEnabled for num::Wrapping<i64> {}
+impl IsEnabled for num::Wrapping<isize> {}
+
 impl<T> IntHasher<T> {
     fn precond_check(&mut self) {
         #[cfg(debug_assertions)]
