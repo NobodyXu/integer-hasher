@@ -1,6 +1,6 @@
 [package]
 name = "integer-hasher"
-version = "0.2.0"
+version = "0.1.0"
 edition = "2018"
 
 authors = ["Jiahao XU <Jiahao_XU@outlook.com>", "Parity Technologies <admin@parity.io>"]
