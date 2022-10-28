@@ -128,6 +128,10 @@ impl<T> Default for IntHasher<T> {
     }
 }
 
+mod sealed {
+    pub trait Sealed {}
+}
+
 /// Types which are safe to use with `IntHasher`.
 ///
 /// This marker trait is an option for types to enable themselves for use
@@ -163,7 +167,18 @@ impl<T> Default for IntHasher<T> {
 /// assert_eq!(Some(&'t'), m.get(&SomeType(1)));
 /// assert_eq!(Some(&'f'), m.get(&SomeType(0)));
 /// ```
-pub trait IsEnabled {}
+pub trait IsEnabled: sealed::Sealed {}
+
+impl sealed::Sealed for u8 {}
+impl sealed::Sealed for u16 {}
+impl sealed::Sealed for u32 {}
+impl sealed::Sealed for u64 {}
+impl sealed::Sealed for usize {}
+impl sealed::Sealed for i8 {}
+impl sealed::Sealed for i16 {}
+impl sealed::Sealed for i32 {}
+impl sealed::Sealed for i64 {}
+impl sealed::Sealed for isize {}
 
 impl IsEnabled for u8 {}
 impl IsEnabled for u16 {}
