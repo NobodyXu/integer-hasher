@@ -16,6 +16,7 @@
 use core::{
     hash::{BuildHasherDefault, Hasher},
     marker::PhantomData,
+    num,
 };
 
 /// A `HashMap` with an integer domain, using `IntHasher` to perform no hashing at all.
@@ -173,11 +174,24 @@ impl IsEnabled for u16 {}
 impl IsEnabled for u32 {}
 impl IsEnabled for u64 {}
 impl IsEnabled for usize {}
+
 impl IsEnabled for i8 {}
 impl IsEnabled for i16 {}
 impl IsEnabled for i32 {}
 impl IsEnabled for i64 {}
 impl IsEnabled for isize {}
+
+impl IsEnabled for num::NonZeroU8 {}
+impl IsEnabled for num::NonZeroU16 {}
+impl IsEnabled for num::NonZeroU32 {}
+impl IsEnabled for num::NonZeroU64 {}
+impl IsEnabled for num::NonZeroUsize {}
+
+impl IsEnabled for num::NonZeroI8 {}
+impl IsEnabled for num::NonZeroI16 {}
+impl IsEnabled for num::NonZeroI32 {}
+impl IsEnabled for num::NonZeroI64 {}
+impl IsEnabled for num::NonZeroIsize {}
 
 impl<T> IntHasher<T> {
     fn precond_check(&mut self) {
