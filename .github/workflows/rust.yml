@@ -9,7 +9,6 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -18,3 +17,11 @@ jobs:
       run: cargo test
     - name: Run tests (release)
       run: cargo test --release
+
+  doc:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build doc
+      run: ./build_doc.sh
