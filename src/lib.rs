@@ -106,8 +106,27 @@ pub type BuildIntHasher<T> = BuildHasherDefault<IntHasher<T>>;
 /// assert_eq!(Some(&'a'), m.get(&0));
 /// assert_eq!(Some(&'b'), m.get(&1));
 /// ```
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Debug)]
 pub struct IntHasher<T>(u64, #[cfg(debug_assertions)] bool, PhantomData<T>);
+
+impl<T> Copy for IntHasher<T> {}
+
+impl<T> Clone for IntHasher<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<T> Default for IntHasher<T> {
+    fn default() -> Self {
+        Self(
+            0,
+            #[cfg(debug_assertions)]
+            false,
+            PhantomData,
+        )
+    }
+}
 
 /// Types which are safe to use with `IntHasher`.
 ///
