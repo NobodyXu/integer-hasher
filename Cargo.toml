@@ -1,12 +1,14 @@
 [package]
-name = "nohash-hasher"
+name = "integer-hasher"
 version = "0.2.0"
 edition = "2018"
-authors = ["Parity Technologies <admin@parity.io>"]
+
+authors = ["Jiahao XU <Jiahao_XU@outlook.com>", "Parity Technologies <admin@parity.io>"]
 license = "Apache-2.0 OR MIT"
+
 description = "An implementation of `std::hash::Hasher` which does not hash at all."
-repository = "https://github.com/paritytech/nohash-hasher"
-readme = "README.md"
+repository = "https://github.com/NobodyXu/integer-hasher"
+
 keywords = ["hash", "hasher", "hashmap", "hashset"]
 
 [features]
