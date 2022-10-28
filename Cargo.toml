@@ -14,3 +14,13 @@ keywords = ["hash", "hasher", "hashmap", "hashset"]
 [features]
 default = ["std"]
 std = []
+
+# docs.rs-specific configuration, shamelessly copied from
+# https://stackoverflow.com/a/61417700/8375400.
+#
+# To test locally, use ` ./build_doc.sh`
+[package.metadata.docs.rs]
+# document all features
+all-features = true
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]
