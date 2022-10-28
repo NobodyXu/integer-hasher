@@ -10,9 +10,13 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use core::{fmt, hash::{BuildHasherDefault, Hasher}, marker::PhantomData};
+use core::{
+    fmt,
+    hash::{BuildHasherDefault, Hasher},
+    marker::PhantomData,
+};
 
-/// A `HashMap` with an integer domain, using `NoHashHasher` to perform no hashing at all.
+/// A `HashMap` with an integer domain, using `IntHasher` to perform no hashing at all.
 ///
 /// # Examples
 ///
@@ -30,9 +34,9 @@ use core::{fmt, hash::{BuildHasherDefault, Hasher}, marker::PhantomData};
 /// assert!(m.contains_key(&1));
 /// ```
 #[cfg(feature = "std")]
-pub type IntMap<K, V> = std::collections::HashMap<K, V, BuildNoHashHasher<K>>;
+pub type IntMap<K, V> = std::collections::HashMap<K, V, BuildIntHasher<K>>;
 
-/// A `HashSet` of integers, using `NoHashHasher` to perform no hashing at all.
+/// A `HashSet` of integers, using `IntHasher` to perform no hashing at all.
 ///
 /// # Examples
 ///
@@ -50,20 +54,20 @@ pub type IntMap<K, V> = std::collections::HashMap<K, V, BuildNoHashHasher<K>>;
 /// assert!(m.contains(&1));
 /// ```
 #[cfg(feature = "std")]
-pub type IntSet<T> = std::collections::HashSet<T, BuildNoHashHasher<T>>;
+pub type IntSet<T> = std::collections::HashSet<T, BuildIntHasher<T>>;
 
-/// An alias for `BuildHasherDefault` for use with `NoHashHasher`.
+/// An alias for `BuildHasherDefault` for use with `IntHasher`.
 ///
 /// # Examples
 ///
 /// See also [`IntMap`] and [`IntSet`] for some easier usage examples.
 ///
 /// ```
-/// use nohash_hasher::BuildNoHashHasher;
+/// use nohash_hasher::BuildIntHasher;
 /// use std::collections::HashMap;
 ///
-/// let mut m: HashMap::<u8, char, BuildNoHashHasher<u8>> =
-///     HashMap::with_capacity_and_hasher(2, BuildNoHashHasher::default());
+/// let mut m: HashMap::<u8, char, BuildIntHasher<u8>> =
+///     HashMap::with_capacity_and_hasher(2, BuildIntHasher::default());
 ///
 /// m.insert(0, 'a');
 /// m.insert(1, 'b');
@@ -71,30 +75,30 @@ pub type IntSet<T> = std::collections::HashSet<T, BuildNoHashHasher<T>>;
 /// assert_eq!(Some(&'a'), m.get(&0));
 /// assert_eq!(Some(&'b'), m.get(&1));
 /// ```
-pub type BuildNoHashHasher<T> = BuildHasherDefault<NoHashHasher<T>>;
+pub type BuildIntHasher<T> = BuildHasherDefault<IntHasher<T>>;
 
-/// For an enabled type `T`, a `NoHashHasher<T>` implements `std::hash::Hasher` and
+/// For an enabled type `T`, a `IntHasher<T>` implements `std::hash::Hasher` and
 /// uses the value set by one of the `write_{u8, u16, u32, u64, usize, i8, i16, i32,
 /// i64, isize}` methods as its hash output.
 ///
-/// `NoHashHasher` does not implement any hashing algorithm and can only be used
+/// `IntHasher` does not implement any hashing algorithm and can only be used
 /// with types which can be mapped directly to a numeric value. Out of the box
-/// `NoHashHasher` is enabled for `u8`, `u16`, `u32`, `u64`, `usize`, `i8`, `i16`,
-/// `i32`, `i64`, and `isize`. Types that should be used with `NoHashHasher` need
+/// `IntHasher` is enabled for `u8`, `u16`, `u32`, `u64`, `usize`, `i8`, `i16`,
+/// `i32`, `i64`, and `isize`. Types that should be used with `IntHasher` need
 /// to implement [`IsEnabled`] and by doing so assert that their `Hash` impl invokes
 /// *only one* of the `Hasher::write_{u8, u16, u32, u64, usize, i8, i16, i32, i64,
 /// isize}` methods *exactly once*.
 ///
 /// # Examples
 ///
-/// See also [`BuildNoHashHasher`], [`IntMap`] and [`IntSet`] for some easier
+/// See also [`BuildIntHasher`], [`IntMap`] and [`IntSet`] for some easier
 /// usage examples. See [`IsEnabled`] for use with custom types.
 ///
 /// ```
-/// use nohash_hasher::NoHashHasher;
+/// use nohash_hasher::IntHasher;
 /// use std::{collections::HashMap, hash::BuildHasherDefault};
 ///
-/// let mut m: HashMap::<u8, char, BuildHasherDefault<NoHashHasher<u8>>> =
+/// let mut m: HashMap::<u8, char, BuildHasherDefault<IntHasher<u8>>> =
 ///     HashMap::with_capacity_and_hasher(2, BuildHasherDefault::default());
 ///
 /// m.insert(0, 'a');
@@ -104,53 +108,56 @@ pub type BuildNoHashHasher<T> = BuildHasherDefault<NoHashHasher<T>>;
 /// assert_eq!(Some(&'b'), m.get(&1));
 /// ```
 #[cfg(debug_assertions)]
-pub struct NoHashHasher<T>(u64, bool, PhantomData<T>);
+pub struct IntHasher<T>(u64, bool, PhantomData<T>);
 
 #[cfg(not(debug_assertions))]
-pub struct NoHashHasher<T>(u64, PhantomData<T>);
+pub struct IntHasher<T>(u64, PhantomData<T>);
 
-impl<T> fmt::Debug for NoHashHasher<T> {
+impl<T> fmt::Debug for IntHasher<T> {
     #[cfg(debug_assertions)]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_tuple("NoHashHasher").field(&self.0).field(&self.1).finish()
+        f.debug_tuple("IntHasher")
+            .field(&self.0)
+            .field(&self.1)
+            .finish()
     }
 
     #[cfg(not(debug_assertions))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_tuple("NoHashHasher").field(&self.0).finish()
+        f.debug_tuple("IntHasher").field(&self.0).finish()
     }
 }
 
-impl<T> Default for NoHashHasher<T> {
+impl<T> Default for IntHasher<T> {
     #[cfg(debug_assertions)]
     fn default() -> Self {
-        NoHashHasher(0, false, PhantomData)
+        IntHasher(0, false, PhantomData)
     }
 
     #[cfg(not(debug_assertions))]
     fn default() -> Self {
-        NoHashHasher(0, PhantomData)
+        IntHasher(0, PhantomData)
     }
 }
 
-impl<T> Clone for NoHashHasher<T> {
+impl<T> Clone for IntHasher<T> {
     #[cfg(debug_assertions)]
     fn clone(&self) -> Self {
-        NoHashHasher(self.0, self.1, self.2)
+        IntHasher(self.0, self.1, self.2)
     }
 
     #[cfg(not(debug_assertions))]
     fn clone(&self) -> Self {
-        NoHashHasher(self.0, self.1)
+        IntHasher(self.0, self.1)
     }
 }
 
-impl<T> Copy for NoHashHasher<T> {}
+impl<T> Copy for IntHasher<T> {}
 
-/// Types which are safe to use with `NoHashHasher`.
+/// Types which are safe to use with `IntHasher`.
 ///
 /// This marker trait is an option for types to enable themselves for use
-/// with `NoHashHasher`. In order to be safe, the `Hash` impl needs to
+/// with `IntHasher`. In order to be safe, the `Hash` impl needs to
 /// satisfy the following constraint:
 ///
 /// > **One of the `Hasher::write_{u8,u16,u32,u64,usize,i8,i16,i32,i64,isize}`
@@ -196,88 +203,110 @@ impl IsEnabled for i64 {}
 impl IsEnabled for isize {}
 
 #[cfg(not(debug_assertions))]
-impl<T: IsEnabled> Hasher for NoHashHasher<T> {
+impl<T: IsEnabled> Hasher for IntHasher<T> {
     fn write(&mut self, _: &[u8]) {
-        panic!("Invalid use of NoHashHasher")
-    }
-
-    fn write_u8(&mut self, n: u8)       { self.0 = u64::from(n) }
-    fn write_u16(&mut self, n: u16)     { self.0 = u64::from(n) }
-    fn write_u32(&mut self, n: u32)     { self.0 = u64::from(n) }
-    fn write_u64(&mut self, n: u64)     { self.0 = n }
-    fn write_usize(&mut self, n: usize) { self.0 = n as u64 }
-
-    fn write_i8(&mut self, n: i8)       { self.0 = n as u64 }
-    fn write_i16(&mut self, n: i16)     { self.0 = n as u64 }
-    fn write_i32(&mut self, n: i32)     { self.0 = n as u64 }
-    fn write_i64(&mut self, n: i64)     { self.0 = n as u64 }
-    fn write_isize(&mut self, n: isize) { self.0 = n as u64 }
-
-    fn finish(&self) -> u64 { self.0 }
-}
-
-#[cfg(debug_assertions)]
-impl<T: IsEnabled> Hasher for NoHashHasher<T> {
-    fn write(&mut self, _: &[u8]) {
-        panic!("Invalid use of NoHashHasher")
+        panic!("Invalid use of IntHasher")
     }
 
     fn write_u8(&mut self, n: u8) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        self.0 = u64::from(n)
+    }
+    fn write_u16(&mut self, n: u16) {
+        self.0 = u64::from(n)
+    }
+    fn write_u32(&mut self, n: u32) {
+        self.0 = u64::from(n)
+    }
+    fn write_u64(&mut self, n: u64) {
+        self.0 = n
+    }
+    fn write_usize(&mut self, n: usize) {
+        self.0 = n as u64
+    }
+
+    fn write_i8(&mut self, n: i8) {
+        self.0 = n as u64
+    }
+    fn write_i16(&mut self, n: i16) {
+        self.0 = n as u64
+    }
+    fn write_i32(&mut self, n: i32) {
+        self.0 = n as u64
+    }
+    fn write_i64(&mut self, n: i64) {
+        self.0 = n as u64
+    }
+    fn write_isize(&mut self, n: isize) {
+        self.0 = n as u64
+    }
+
+    fn finish(&self) -> u64 {
+        self.0
+    }
+}
+
+#[cfg(debug_assertions)]
+impl<T: IsEnabled> Hasher for IntHasher<T> {
+    fn write(&mut self, _: &[u8]) {
+        panic!("Invalid use of IntHasher")
+    }
+
+    fn write_u8(&mut self, n: u8) {
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = u64::from(n);
         self.1 = true
     }
 
     fn write_u16(&mut self, n: u16) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = u64::from(n);
         self.1 = true
     }
 
     fn write_u32(&mut self, n: u32) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = u64::from(n);
         self.1 = true
     }
 
     fn write_u64(&mut self, n: u64) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n;
         self.1 = true
     }
 
     fn write_usize(&mut self, n: usize) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n as u64;
         self.1 = true
     }
 
     fn write_i8(&mut self, n: i8) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n as u64;
         self.1 = true
     }
 
     fn write_i16(&mut self, n: i16) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n as u64;
         self.1 = true
     }
 
     fn write_i32(&mut self, n: i32) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n as u64;
         self.1 = true
     }
 
     fn write_i64(&mut self, n: i64) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n as u64;
         self.1 = true
     }
 
     fn write_isize(&mut self, n: isize) {
-        assert!(!self.1, "NoHashHasher: second write attempt detected.");
+        assert!(!self.1, "IntHasher: second write attempt detected.");
         self.0 = n as u64;
         self.1 = true
     }
@@ -293,43 +322,43 @@ mod tests {
 
     #[test]
     fn ok() {
-        let mut h1 = NoHashHasher::<u8>::default();
+        let mut h1 = IntHasher::<u8>::default();
         h1.write_u8(42);
         assert_eq!(42, h1.finish());
 
-        let mut h2 = NoHashHasher::<u16>::default();
+        let mut h2 = IntHasher::<u16>::default();
         h2.write_u16(42);
         assert_eq!(42, h2.finish());
 
-        let mut h3 = NoHashHasher::<u32>::default();
+        let mut h3 = IntHasher::<u32>::default();
         h3.write_u32(42);
         assert_eq!(42, h3.finish());
 
-        let mut h4 = NoHashHasher::<u64>::default();
+        let mut h4 = IntHasher::<u64>::default();
         h4.write_u64(42);
         assert_eq!(42, h4.finish());
 
-        let mut h5 = NoHashHasher::<usize>::default();
+        let mut h5 = IntHasher::<usize>::default();
         h5.write_usize(42);
         assert_eq!(42, h5.finish());
 
-        let mut h6 = NoHashHasher::<i8>::default();
+        let mut h6 = IntHasher::<i8>::default();
         h6.write_i8(42);
         assert_eq!(42, h6.finish());
 
-        let mut h7 = NoHashHasher::<i16>::default();
+        let mut h7 = IntHasher::<i16>::default();
         h7.write_i16(42);
         assert_eq!(42, h7.finish());
 
-        let mut h8 = NoHashHasher::<i32>::default();
+        let mut h8 = IntHasher::<i32>::default();
         h8.write_i32(42);
         assert_eq!(42, h8.finish());
 
-        let mut h9 = NoHashHasher::<i64>::default();
+        let mut h9 = IntHasher::<i64>::default();
         h9.write_i64(42);
         assert_eq!(42, h9.finish());
 
-        let mut h10 = NoHashHasher::<isize>::default();
+        let mut h10 = IntHasher::<isize>::default();
         h10.write_isize(42);
         assert_eq!(42, h10.finish())
     }
@@ -338,7 +367,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn u8_double_usage() {
-        let mut h = NoHashHasher::<u8>::default();
+        let mut h = IntHasher::<u8>::default();
         h.write_u8(42);
         h.write_u8(43);
     }
@@ -347,7 +376,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn u16_double_usage() {
-        let mut h = NoHashHasher::<u16>::default();
+        let mut h = IntHasher::<u16>::default();
         h.write_u16(42);
         h.write_u16(43);
     }
@@ -356,7 +385,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn u32_double_usage() {
-        let mut h = NoHashHasher::<u32>::default();
+        let mut h = IntHasher::<u32>::default();
         h.write_u32(42);
         h.write_u32(43);
     }
@@ -365,7 +394,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn u64_double_usage() {
-        let mut h = NoHashHasher::<u64>::default();
+        let mut h = IntHasher::<u64>::default();
         h.write_u64(42);
         h.write_u64(43);
     }
@@ -374,7 +403,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn usize_double_usage() {
-        let mut h = NoHashHasher::<usize>::default();
+        let mut h = IntHasher::<usize>::default();
         h.write_usize(42);
         h.write_usize(43);
     }
@@ -383,7 +412,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn i8_double_usage() {
-        let mut h = NoHashHasher::<i8>::default();
+        let mut h = IntHasher::<i8>::default();
         h.write_i8(42);
         h.write_i8(43);
     }
@@ -392,7 +421,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn i16_double_usage() {
-        let mut h = NoHashHasher::<i16>::default();
+        let mut h = IntHasher::<i16>::default();
         h.write_i16(42);
         h.write_i16(43);
     }
@@ -401,7 +430,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn i32_double_usage() {
-        let mut h = NoHashHasher::<i32>::default();
+        let mut h = IntHasher::<i32>::default();
         h.write_i32(42);
         h.write_i32(43);
     }
@@ -410,7 +439,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn i64_double_usage() {
-        let mut h = NoHashHasher::<i64>::default();
+        let mut h = IntHasher::<i64>::default();
         h.write_i64(42);
         h.write_i64(43);
     }
@@ -419,9 +448,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn isize_double_usage() {
-        let mut h = NoHashHasher::<isize>::default();
+        let mut h = IntHasher::<isize>::default();
         h.write_isize(42);
         h.write_isize(43);
     }
 }
-
