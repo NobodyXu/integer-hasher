@@ -22,7 +22,7 @@ use core::{
 /// See [`IsEnabled`] for use with custom types.
 ///
 /// ```
-/// use nohash_hasher::IntMap;
+/// use integer_hasher::IntMap;
 ///
 /// let mut m: IntMap<u32, bool> = IntMap::default();
 ///
@@ -42,7 +42,7 @@ pub type IntMap<K, V> = std::collections::HashMap<K, V, BuildIntHasher<K>>;
 /// See [`IsEnabled`] for use with custom types.
 ///
 /// ```
-/// use nohash_hasher::IntSet;
+/// use integer_hasher::IntSet;
 ///
 /// let mut m = IntSet::default();
 ///
@@ -62,7 +62,7 @@ pub type IntSet<T> = std::collections::HashSet<T, BuildIntHasher<T>>;
 /// See also [`IntMap`] and [`IntSet`] for some easier usage examples.
 ///
 /// ```
-/// use nohash_hasher::BuildIntHasher;
+/// use integer_hasher::BuildIntHasher;
 /// use std::collections::HashMap;
 ///
 /// let mut m: HashMap::<u8, char, BuildIntHasher<u8>> =
@@ -94,7 +94,7 @@ pub type BuildIntHasher<T> = BuildHasherDefault<IntHasher<T>>;
 /// usage examples. See [`IsEnabled`] for use with custom types.
 ///
 /// ```
-/// use nohash_hasher::IntHasher;
+/// use integer_hasher::IntHasher;
 /// use std::{collections::HashMap, hash::BuildHasherDefault};
 ///
 /// let mut m: HashMap::<u8, char, BuildHasherDefault<IntHasher<u8>>> =
@@ -134,9 +134,9 @@ pub struct IntHasher<T>(u64, #[cfg(debug_assertions)] bool, PhantomData<T>);
 ///     }
 /// }
 ///
-/// impl nohash_hasher::IsEnabled for SomeType {}
+/// impl integer_hasher::IsEnabled for SomeType {}
 ///
-/// let mut m = nohash_hasher::IntMap::default();
+/// let mut m = integer_hasher::IntMap::default();
 ///
 /// m.insert(SomeType(1), 't');
 /// m.insert(SomeType(0), 'f');
