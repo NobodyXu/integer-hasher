@@ -23,5 +23,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install nightly
+      run: rustup toolchain install --profile minimal --no-self-update nightly
     - name: Build doc
       run: ./build_doc.sh
